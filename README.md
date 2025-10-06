@@ -1,14 +1,17 @@
 # echoEnglish Admin NestJS
 
-A standard NestJS backend application with JWT authentication, built from scratch with clean architecture.
+A standard NestJS backend application with JWT authentication and MongoDB integration, built from scratch with clean architecture.
 
 ## Features
 
 - ✅ JWT Authentication with Bearer Token
+- ✅ MongoDB integration with Mongoose
+- ✅ Full CRUD operations for User management
 - ✅ Global JWT Guard protecting all endpoints by default
 - ✅ Public routes using `@Public()` decorator
 - ✅ Login endpoint for authentication
-- ✅ User profile endpoint (protected)
+- ✅ Soft delete support for users
+- ✅ Role-based user management
 - ✅ Password hashing with bcrypt
 - ✅ Request validation with class-validator
 - ✅ Environment configuration with @nestjs/config
@@ -27,17 +30,27 @@ src/
 │   ├── auth.module.ts            # Auth module
 │   └── jwt.strategy.ts           # JWT Passport strategy
 ├── users/
-│   ├── users.controller.ts       # User endpoints
+│   ├── dto/
+│   │   ├── create-user.dto.ts   # Create user DTO
+│   │   └── update-user.dto.ts   # Update user DTO
+│   ├── users.controller.ts       # User CRUD endpoints
 │   ├── users.service.ts          # User business logic
 │   ├── users.module.ts           # User module
-│   └── user.entity.ts            # User interface
+│   └── user.schema.ts            # MongoDB User schema
+├── roles/
+│   └── role.schema.ts            # MongoDB Role schema
 ├── common/
 │   ├── decorators/
 │   │   └── public.decorator.ts  # Public route decorator
-│   └── guards/
-│       └── jwt-auth.guard.ts    # JWT authentication guard
+│   ├── guards/
+│   │   └── jwt-auth.guard.ts    # JWT authentication guard
+│   ├── enums/
+│   │   └── gender.enum.ts       # Gender enum
+│   └── utils/
+│       └── validation.ts         # Validation utilities
 ├── app.module.ts                 # Root module
-└── main.ts                       # Application entry point
+├── main.ts                       # Application entry point
+└── seed.ts                       # Database seeder
 ```
 
 ## Installation
@@ -54,9 +67,24 @@ Create a `.env` file in the root directory:
 PORT=3000
 JWT_SECRET=your-secret-key-change-in-production
 JWT_EXPIRATION=1d
+MONGODB_URI=mongodb://localhost:27017/echoenglish-admin
 ```
 
 See `.env.example` for reference.
+
+## Database Setup
+
+1. Make sure MongoDB is running on your machine or update `MONGODB_URI` in `.env` to point to your MongoDB instance.
+
+2. Seed the database with a default admin user:
+
+```bash
+npm run seed
+```
+
+This will create:
+- Email: `admin@example.com`
+- Password: `admin123`
 
 ## Running the Application
 
@@ -70,6 +98,9 @@ npm run start:dev
 # Production mode
 npm run build
 npm run start:prod
+
+# Seed database
+npm run seed
 ```
 
 ## API Endpoints
@@ -92,12 +123,128 @@ Response:
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
-    "id": "1",
+    "id": "507f1f77bcf86cd799439011",
     "email": "admin@example.com",
-    "name": "Admin User"
+    "fullName": "Admin User",
+    "roles": []
   }
 }
 ```
+
+### User Management (Protected)
+
+All user endpoints require JWT authentication via `Authorization: Bearer <token>` header.
+
+#### Create User
+```bash
+POST /users
+Content-Type: application/json
+Authorization: Bearer <access_token>
+
+{
+  "fullName": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "gender": "MALE",
+  "dob": "1990-01-01",
+  "phoneNumber": "0912345678",
+  "address": "123 Main St",
+  "image": "https://example.com/avatar.jpg",
+  "roles": []
+}
+```
+
+#### Get All Users
+```bash
+GET /users
+Authorization: Bearer <access_token>
+
+# Include soft-deleted users
+GET /users?includeDeleted=true
+```
+
+#### Get User Profile (Current User)
+```bash
+GET /users/profile
+Authorization: Bearer <access_token>
+```
+
+#### Get User by ID
+```bash
+GET /users/:id
+Authorization: Bearer <access_token>
+```
+
+#### Update User
+```bash
+PUT /users/:id
+Content-Type: application/json
+Authorization: Bearer <access_token>
+
+{
+  "fullName": "John Updated",
+  "phoneNumber": "0987654321",
+  "credits": 100
+}
+```
+
+#### Delete User (Soft Delete)
+```bash
+DELETE /users/:id
+Authorization: Bearer <access_token>
+```
+
+#### Permanent Delete User
+```bash
+DELETE /users/:id?hard=true
+Authorization: Bearer <access_token>
+```
+
+#### Restore Deleted User
+```bash
+PATCH /users/:id/restore
+Authorization: Bearer <access_token>
+```
+
+#### Add Credits to User
+```bash
+PATCH /users/:id/credits
+Content-Type: application/json
+Authorization: Bearer <access_token>
+
+{
+  "amount": 50
+}
+```
+
+#### Assign Roles to User
+```bash
+PATCH /users/:id/roles
+Content-Type: application/json
+Authorization: Bearer <access_token>
+
+{
+  "roleIds": ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+}
+```
+
+## User Schema
+
+The User model includes the following fields:
+
+- `fullName` (string, required): Full name of the user
+- `gender` (enum: MALE, FEMALE, OTHER): User's gender
+- `dob` (Date): Date of birth
+- `email` (string, required, unique): User's email address
+- `password` (string, required, 8-100 chars): Hashed password
+- `phoneNumber` (string): Vietnamese phone number format
+- `address` (string): Physical address
+- `image` (string): Avatar/profile image URL
+- `roles` (ObjectId[]): References to Role documents
+- `credits` (number, default: 0): User credits/tokens
+- `isDeleted` (boolean, default: false): Soft delete flag
+- `createdAt` (Date): Auto-generated timestamp
+- `updatedAt` (Date): Auto-generated timestamp
 
 ### User Profile (Protected)
 
@@ -110,10 +257,15 @@ Authorization: Bearer <access_token>
 Response:
 ```json
 {
-  "id": "1",
+  "_id": "507f1f77bcf86cd799439011",
+  "fullName": "Admin User",
   "email": "admin@example.com",
-  "name": "Admin User",
-  "createdAt": "2025-10-06T14:50:47.378Z"
+  "gender": "OTHER",
+  "credits": 0,
+  "roles": [],
+  "isDeleted": false,
+  "createdAt": "2025-10-06T14:50:47.378Z",
+  "updatedAt": "2025-10-06T14:50:47.378Z"
 }
 ```
 
