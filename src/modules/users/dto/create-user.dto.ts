@@ -11,7 +11,7 @@ import {
   IsArray,
   IsMongoId,
 } from 'class-validator';
-import { Gender } from '../../common/enums/gender.enum';
+import { Gender } from '../../../common/enums/gender.enum';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'FULL_NAME_REQUIRED' })

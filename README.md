@@ -4,53 +4,85 @@ A standard NestJS backend application with JWT authentication and MongoDB integr
 
 ## Features
 
-- ✅ JWT Authentication with Bearer Token
-- ✅ MongoDB integration with Mongoose
-- ✅ Full CRUD operations for User management
-- ✅ Global JWT Guard protecting all endpoints by default
-- ✅ Public routes using `@Public()` decorator
-- ✅ Login endpoint for authentication
-- ✅ Soft delete support for users
-- ✅ Role-based user management
-- ✅ Password hashing with bcrypt
-- ✅ Request validation with class-validator
-- ✅ Environment configuration with @nestjs/config
-- ✅ TypeScript support
-- ✅ ESLint and Prettier configured
+- ✅ Global Exception Filter for consistent error handling
+- ✅ Global Response Interceptor wrapping all responses
+- ✅ Role-based access control (all endpoints require ADMIN role by default)
+
+## API Response Structure
+
+All API responses follow a consistent structure:
+
+```json
+{
+  "message": "Success",
+  "data": {
+    // Actual response data here
+  }
+}
+```
+
+- `message`: A string indicating the result status (always "Success" for successful responses)
+- `data`: The actual response payload
+
+## Error Response Structure
+
+All error responses follow a consistent structure:
+
+```json
+{
+  "message": "Error description",
+  "error": "Error type",
+  "statusCode": 400,
+  "timestamp": "2025-10-06T15:00:00.000Z",
+  "path": "/api/endpoint"
+}
+```
+
+## Authentication Flow
 
 ## Project Structure
 
 ```
 src/
-├── auth/
-│   ├── dto/
-│   │   └── login.dto.ts          # Login validation DTO
-│   ├── auth.controller.ts        # Auth endpoints
-│   ├── auth.service.ts           # Auth business logic
-│   ├── auth.module.ts            # Auth module
-│   └── jwt.strategy.ts           # JWT Passport strategy
-├── users/
-│   ├── dto/
-│   │   ├── create-user.dto.ts   # Create user DTO
-│   │   └── update-user.dto.ts   # Update user DTO
-│   ├── users.controller.ts       # User CRUD endpoints
-│   ├── users.service.ts          # User business logic
-│   ├── users.module.ts           # User module
-│   └── user.schema.ts            # MongoDB User schema
-├── roles/
-│   └── role.schema.ts            # MongoDB Role schema
-├── common/
+├── main.ts
+├── app.module.ts
+├── common/            # Shared guards, pipes, interceptors, filters
 │   ├── decorators/
-│   │   └── public.decorator.ts  # Public route decorator
+│   │   └── public.decorator.ts
 │   ├── guards/
-│   │   └── jwt-auth.guard.ts    # JWT authentication guard
+│   │   └── jwt-auth.guard.ts
+│   ├── interceptors/
+│   │   └── response.interceptor.ts  # Global response wrapper
+│   ├── filters/
+│   │   └── http-exception.filter.ts # Global exception handler
 │   ├── enums/
-│   │   └── gender.enum.ts       # Gender enum
+│   │   └── gender.enum.ts
 │   └── utils/
-│       └── validation.ts         # Validation utilities
-├── app.module.ts                 # Root module
-├── main.ts                       # Application entry point
-└── seed.ts                       # Database seeder
+│       └── validation.ts
+├── config/            # ConfigModule + Joi validation
+├── database/          # Mongoose schemas
+│   ├── user.schema.ts
+│   ├── user.entity.ts
+│   └── role.schema.ts
+├── modules/
+│   ├── auth/
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   ├── auth.module.ts
+│   │   ├── jwt.strategy.ts
+│   │   └── dto/
+│   │       └── login.dto.ts
+│   ├── users/
+│   │   ├── users.controller.ts
+│   │   ├── users.service.ts
+│   │   ├── users.module.ts
+│   │   ├── dto/
+│   │   ├── entities/
+│   │   └── repositories/
+│   └── roles/
+│       ├── roles.module.ts
+│       └── role.schema.ts (moved to database/)
+└── seed.ts
 ```
 
 ## Installation
@@ -121,12 +153,15 @@ Content-Type: application/json
 Response:
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "507f1f77bcf86cd799439011",
-    "email": "admin@example.com",
-    "fullName": "Admin User",
-    "roles": []
+  "message": "Success",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "507f1f77bcf86cd799439011",
+      "email": "admin@example.com",
+      "fullName": "Admin User",
+      "roles": []
+    }
   }
 }
 ```
@@ -257,15 +292,18 @@ Authorization: Bearer <access_token>
 Response:
 ```json
 {
-  "_id": "507f1f77bcf86cd799439011",
-  "fullName": "Admin User",
-  "email": "admin@example.com",
-  "gender": "OTHER",
-  "credits": 0,
-  "roles": [],
-  "isDeleted": false,
-  "createdAt": "2025-10-06T14:50:47.378Z",
-  "updatedAt": "2025-10-06T14:50:47.378Z"
+  "message": "Success",
+  "data": {
+    "_id": "507f1f77bcf86cd799439011",
+    "fullName": "Admin User",
+    "email": "admin@example.com",
+    "gender": "OTHER",
+    "credits": 0,
+    "roles": [],
+    "isDeleted": false,
+    "createdAt": "2025-10-06T14:50:47.378Z",
+    "updatedAt": "2025-10-06T14:50:47.378Z"
+  }
 }
 ```
 
@@ -274,11 +312,12 @@ Response:
 1. **All endpoints are protected by default** - The `JwtAuthGuard` is registered globally in `app.module.ts`
 2. **Public routes** - Use the `@Public()` decorator to bypass authentication (e.g., login endpoint)
 3. **JWT middleware** - The guard automatically validates JWT tokens and attaches user info to `req.user`
-4. **User context** - Authenticated user data is available in controllers via `@Request()` decorator
+4. **Role check** - All protected endpoints require the user to have the `ADMIN` role
+5. **User context** - Authenticated user data is available in controllers via `@Request()` decorator
 
 ## Default User
 
-A default admin user is created automatically:
+A default admin user is created automatically with ADMIN role:
 - Email: `admin@example.com`
 - Password: `admin123`
 
