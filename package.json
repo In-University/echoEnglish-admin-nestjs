@@ -9,7 +9,7 @@
     "build": "tsc -p tsconfig.json",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "ts-node src/main.ts",
-    "start:dev": "ts-node --watch src/main.ts",
+    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "seed": "ts-node src/seed.ts"
@@ -46,6 +46,7 @@
     "prettier": "^3.6.2",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }
 }

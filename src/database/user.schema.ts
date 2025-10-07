@@ -83,12 +83,6 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Add indexes for better query performance
-UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ isDeleted: 1 });
-UserSchema.index({ roles: 1 });
-UserSchema.index({ createdAt: -1 });
-
 // Remove password from toJSON transformation
 UserSchema.set('toJSON', {
   transform: function (doc, ret) {

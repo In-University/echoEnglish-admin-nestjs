@@ -8,13 +8,21 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isAdmin = user.roles.some(
+      (role: any) => role.name === 'ADMIN',
+    );
+
+    if (!isAdmin) {
+      throw new UnauthorizedException('Access denied. Admins only.');
     }
 
     const isPasswordValid = await this.usersService.validatePassword(

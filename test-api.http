@@ -1,5 +1,5 @@
 ### Login to get JWT token
-POST http://localhost:3000/auth/login
+POST http://localhost:8098/auth/login
 Content-Type: application/json
 
 {
@@ -8,19 +8,19 @@ Content-Type: application/json
 }
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGV4YW1wbGUuY29tIiwic3ViIjoiNjhlM2U2NWM5MzliYWQ4MDk2OWYzNTkzIiwiaWF0IjoxNzU5NzY2MjMxLCJleHAiOjE3NTk4NTI2MzF9.vJN-q_UXaAyT4HoJWUmVvsRpU1GFxZdP5YC_YmP3ORY
 ### Get user profile (replace {{token}} with actual token from login response)
-GET http://localhost:3000/users/profile
+GET http://localhost:8098/users/profile
 Authorization: Bearer {{token}}
 
 ### Get all users
-GET http://localhost:3000/users
+GET http://localhost:8098/users
 Authorization: Bearer {{token}}
 
 ### Get all users including soft-deleted
-GET http://localhost:3000/users?includeDeleted=true
+GET http://localhost:8098/users?includeDeleted=true
 Authorization: Bearer {{token}}
 
 ### Create a new user
-POST http://localhost:3000/users
+POST http://localhost:8098/users
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -37,11 +37,11 @@ Authorization: Bearer {{token}}
 }
 
 ### Get user by ID (replace :id with actual user ID)
-GET http://localhost:3000/users/507f1f77bcf86cd799439011
+GET http://localhost:8098/users/507f1f77bcf86cd799439011
 Authorization: Bearer {{token}}
 
 ### Update user (replace :id with actual user ID)
-PUT http://localhost:3000/users/507f1f77bcf86cd799439011
+PUT http://localhost:8098/users/507f1f77bcf86cd799439011
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -52,19 +52,19 @@ Authorization: Bearer {{token}}
 }
 
 ### Soft delete user (replace :id with actual user ID)
-DELETE http://localhost:3000/users/507f1f77bcf86cd799439011
+DELETE http://localhost:8098/users/507f1f77bcf86cd799439011
 Authorization: Bearer {{token}}
 
 ### Permanent delete user (replace :id with actual user ID)
-DELETE http://localhost:3000/users/507f1f77bcf86cd799439011?hard=true
+DELETE http://localhost:8098/users/507f1f77bcf86cd799439011?hard=true
 Authorization: Bearer {{token}}
 
 ### Restore deleted user (replace :id with actual user ID)
-PATCH http://localhost:3000/users/507f1f77bcf86cd799439011/restore
+PATCH http://localhost:8098/users/507f1f77bcf86cd799439011/restore
 Authorization: Bearer {{token}}
 
 ### Add credits to user (replace :id with actual user ID)
-PATCH http://localhost:3000/users/507f1f77bcf86cd799439011/credits
+PATCH http://localhost:8098/users/507f1f77bcf86cd799439011/credits
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -73,7 +73,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Assign roles to user (replace :id with actual user ID)
-PATCH http://localhost:3000/users/507f1f77bcf86cd799439011/roles
+PATCH http://localhost:8098/users/507f1f77bcf86cd799439011/roles
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

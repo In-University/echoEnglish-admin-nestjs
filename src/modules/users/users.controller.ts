@@ -19,7 +19,18 @@ import { UpdateUserDto } from './dto/update-user.dto';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
+
+  // Lấy danh sách user + search
+  @Get()
+  async findAll(
+    @Query('search') search?: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ) {
+    const result = await this.usersService.findAll(search, +page, +limit);
+    return result;
+  }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -28,11 +39,20 @@ export class UsersController {
     return user;
   }
 
-  @Get()
-  async findAll(@Query('includeDeleted') includeDeleted?: string) {
-    const users = await this.usersService.findAll(includeDeleted === 'true');
-    // Password is already removed by schema toJSON transform
-    return users;
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(id, updateUserDto);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string, @Query('hard') hard?: string) {
+    await this.usersService.remove(id, hard === 'true');
+    return { message: 'User deleted successfully' };
+  }
+
+  @Patch(':id/restore')
+  async restore(@Param('id') id: string) {
+    return this.usersService.restore(id);
   }
 
   @Get('profile')
@@ -44,25 +64,6 @@ export class UsersController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.usersService.findById(id);
-  }
-
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
-  }
-
-  @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @Query('hard') hard?: string,
-  ) {
-    await this.usersService.remove(id, hard === 'true');
-    return { message: 'User deleted successfully' };
-  }
-
-  @Patch(':id/restore')
-  async restore(@Param('id') id: string) {
-    return this.usersService.restore(id);
   }
 
   @Patch(':id/credits')
