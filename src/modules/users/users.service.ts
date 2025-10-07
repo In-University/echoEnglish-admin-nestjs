@@ -12,6 +12,26 @@ export class UsersService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) { }
 
+  async updatePassword(email: string, newPassword: string): Promise<User> {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    const updatedUser = await this.userModel
+      .findOneAndUpdate(
+        { email, isDeleted: false },
+        { $set: { password: hashedPassword } },
+        { new: true },
+      )
+      .select('-password')
+      .exec();
+
+    if (!updatedUser) {
+      throw new NotFoundException('User not found');
+    }
+
+    return updatedUser;
+  }
+
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userModel.findOne({
       email: createUserDto.email.toLowerCase(),
@@ -205,4 +225,6 @@ export class UsersService {
 
     return user;
   }
+
+
 }
