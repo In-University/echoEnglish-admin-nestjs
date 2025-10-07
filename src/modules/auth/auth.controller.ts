@@ -31,27 +31,33 @@ export class AuthController {
     };
   }
 
-@Post('forgot-password')
-async forgotPassword(@Body('email') email: string) {
-  const user = await this.usersService.findByEmail(email);
-  if (!user) throw new BadRequestException('User not found');
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string): Promise<Response<any>>{
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new BadRequestException('User not found');
 
-  return this.authService.generateOtp(email, OtpPurpose.FORGOT_PASSWORD);
-}
+    const result = await this.authService.generateOtp(email, OtpPurpose.FORGOT_PASSWORD);
+    return {
+      message: "",
+      data: result
+    };
+  }
 
-@Post('verify-otp')
-async verifyOtp(@Body() body: { email: string; otp: string }) {
-  await this.authService.verifyOtp(body.email, body.otp);
-  return { message: 'OTP verified' };
-}
+  @Post('verify-otp')
+  async verifyOtp(@Body() body: { email: string; otp: string }): Promise<Response<any>> {
+    await this.authService.verifyOtp(body.email, body.otp);
+    return { 
+      message: 'OTP verified'
+    };
+  }
 
-@Post('reset-password')
-async resetPassword(
-  @Body() body: { email: string; otp: string; newPassword: string },
-) {
-  await this.authService.verifyOtp(body.email, body.otp);
-  await this.usersService.updatePassword(body.email, body.newPassword);
+  @Post('reset-password')
+  async resetPassword(
+    @Body() body: { email: string; otp: string; newPassword: string },
+  ) : Promise<Response<any>>{
+    await this.authService.verifyOtp(body.email, body.otp);
+    await this.usersService.updatePassword(body.email, body.newPassword);
 
-  return { message: 'Password reset successful' };
-}
+    return { message: 'Password reset successful' };
+  }
 }
