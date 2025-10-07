@@ -72,7 +72,8 @@ export class AuthService {
     await this.otpModel.create({ email, otp, purpose, expiryTime });
 
     // Gửi OTP bằng email HTML template
-    await this.sendOtpEmail(email, otp, purpose);
+    this.sendOtpEmail(email, otp, purpose)
+    .catch((err) => console.error('Failed to send OTP email:', err));
 
     return { message: 'OTP sent successfully' };
   }

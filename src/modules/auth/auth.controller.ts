@@ -31,8 +31,9 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post('forgot-password')
-  async forgotPassword(@Body('email') email: string): Promise<Response<any>>{
+  async forgotPassword(@Body('email') email: string): Promise<Response<any>> {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new BadRequestException('User not found');
 
@@ -43,20 +44,26 @@ export class AuthController {
     };
   }
 
+  @Public()
   @Post('verify-otp')
   async verifyOtp(@Body() body: { email: string; otp: string }): Promise<Response<any>> {
     await this.authService.verifyOtp(body.email, body.otp);
-    return { 
+    return {
       message: 'OTP verified'
     };
   }
 
+  @Public()
   @Post('reset-password')
   async resetPassword(
     @Body() body: { email: string; otp: string; newPassword: string },
-  ) : Promise<Response<any>>{
-    await this.authService.verifyOtp(body.email, body.otp);
-    await this.usersService.updatePassword(body.email, body.newPassword);
+  ): Promise<Response<any>> {
+    const { email, otp, newPassword } = body;
+    if (!newPassword || newPassword.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters long');
+    }
+    await this.authService.verifyOtp(email, otp);
+    await this.usersService.updatePassword(email, newPassword);
 
     return { message: 'Password reset successful' };
   }
