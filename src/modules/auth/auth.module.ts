@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Otp, OtpSchema } from '../../database/otp.schema';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { UsersModule } from '../users/users.module';
       }),
       inject: [ConfigService],
     }),
+    MongooseModule.forFeature([{ name: Otp.name, schema: OtpSchema }]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
