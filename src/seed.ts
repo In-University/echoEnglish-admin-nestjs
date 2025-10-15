@@ -23,19 +23,19 @@ async function bootstrap() {
     }
 
     // Check if admin user already exists
-    const existingAdmin = await usersService.findByEmail('admin@example.com');
+    const existingAdmin = await usersService.findByEmail('admin@gmail.com');
 
     if (!existingAdmin) {
       // Create default admin user with ADMIN role
       await usersService.create({
         fullName: 'Admin User',
-        email: 'admin@example.com',
-        password: 'admin123',
+        email: 'admin@gmail.com',
+        password: '12341234',
         roles: [adminRole._id.toString()],
       });
       console.log('✓ Default admin user created successfully');
-      console.log('  Email: admin@example.com');
-      console.log('  Password: admin123');
+      console.log('  Email: admin@gmail.com');
+      console.log('  Password: 12341234');
     } else {
       console.log('✓ Admin user already exists');
     }

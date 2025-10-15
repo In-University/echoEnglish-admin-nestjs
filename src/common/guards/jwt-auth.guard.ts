@@ -24,6 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
+    // Proceed with JWT authentication: calls Passport strategy to validate token
     return super.canActivate(context);
   }
 

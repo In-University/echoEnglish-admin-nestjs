@@ -8,6 +8,8 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { PromoModule } from './modules/promotion/promo.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { ResourceModule } from './modules/resource/resource.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { PaymentModule } from './modules/payment/payment.module';
     UsersModule,
     PromoModule,
     PaymentModule,
+    ResourceModule,
+    NotificationModule,
   ],
   providers: [
     {

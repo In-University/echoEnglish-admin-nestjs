@@ -8,9 +8,9 @@ async function bootstrap() {
   // Enable validation globally
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
+      whitelist: true, // Loại field thừa không có trong DTO
+      forbidNonWhitelisted: true, //Báo lỗi nếu có field thừa
+      transform: true, // Tự động chuyển đổi (transform) payload thành instance của class DTO
     }),
   );
 
@@ -24,7 +24,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 8999;
   await app.listen(port);
   console.log(`Application is running on: http://localhost:${port}`);
 }
