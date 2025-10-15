@@ -30,9 +30,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isAdmin = user.roles.some(
-      (role: any) => role.name === 'ADMIN',
-    );
+    const isAdmin = user.roles.some((role: any) => role.name === 'ADMIN');
 
     if (!isAdmin) {
       throw new UnauthorizedException('Access denied. Admins only.');
@@ -72,8 +70,9 @@ export class AuthService {
     await this.otpModel.create({ email, otp, purpose, expiryTime });
 
     // Gửi OTP bằng email HTML template
-    this.sendOtpEmail(email, otp, purpose)
-    .catch((err) => console.error('Failed to send OTP email:', err));
+    this.sendOtpEmail(email, otp, purpose).catch((err) =>
+      console.error('Failed to send OTP email:', err),
+    );
 
     return { message: 'OTP sent successfully' };
   }
@@ -86,7 +85,11 @@ export class AuthService {
     return true;
   }
 
-  private async sendOtpEmail(email: string, otpCode: string, purpose: OtpPurpose) {
+  private async sendOtpEmail(
+    email: string,
+    otpCode: string,
+    purpose: OtpPurpose,
+  ) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -130,5 +133,4 @@ export class AuthService {
     `;
     return htmlContent;
   }
-
 }

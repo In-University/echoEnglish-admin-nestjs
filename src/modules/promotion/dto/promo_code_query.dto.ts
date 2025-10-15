@@ -1,6 +1,14 @@
 // src/modules/promotion/dto/promo-query.dto.ts
 import { Transform, Type } from 'class-transformer';
-import { IsBooleanString, IsInt, IsNumber, IsNumberString, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsBooleanString,
+  IsInt,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class PromoQueryDto {
   @IsOptional()
@@ -42,7 +50,7 @@ export class PromoQueryDto {
 
   @IsOptional()
   @IsString()
-  status?: 'expired' | 'valid'; 
+  status?: 'expired' | 'valid';
 
   @IsOptional()
   @IsString()

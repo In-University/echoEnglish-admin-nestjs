@@ -1,4 +1,9 @@
-import { ExecutionContext, Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
@@ -14,11 +19,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getHandler(),
       context.getClass(),
     ]);
-    
+
     if (isPublic) {
       return true;
     }
-    
+
     return super.canActivate(context);
   }
 
@@ -29,7 +34,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     // Check if user has ADMIN role
     if (!user.roles || !user.roles.includes('ADMIN')) {
-      throw new ForbiddenException('Insufficient permissions. Admin role required.');
+      throw new ForbiddenException(
+        'Insufficient permissions. Admin role required.',
+      );
     }
 
     return user;

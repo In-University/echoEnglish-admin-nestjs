@@ -20,7 +20,7 @@ import { Response } from '../../common/interfaces/response.interface';
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // Lấy danh sách user + search
   @Get()
@@ -28,7 +28,7 @@ export class UsersController {
     @Query('search') search?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
-  ) : Promise<Response<any>> {
+  ): Promise<Response<any>> {
     const result = await this.usersService.findAll(search, +page, +limit);
     return {
       message: 'Fetched users successfully',

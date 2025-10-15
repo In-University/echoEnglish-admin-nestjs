@@ -10,8 +10,8 @@ export class RolesController {
   async findAll(@Query('search') search?: string): Promise<Response<any>> {
     const result = await this.rolesService.findAll(search);
     return {
-      message: "Get role success",
-      data: result
-    }
+      message: 'Get role success',
+      data: result,
+    };
   }
 }

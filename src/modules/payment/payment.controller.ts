@@ -17,18 +17,18 @@ import { PaymentQuery, PaymentService } from './payment.service';
 @Controller('payments')
 @UseGuards(JwtAuthGuard)
 export class PaymentController {
+  constructor(private readonly paymentService: PaymentService) {}
 
-    constructor(private readonly paymentService: PaymentService) {}
-
-    @Get()
-    async findAll(
-        @Query() body : PaymentQuery, 
-        @Query('page') page = 1,
-        @Query('limit') limit = 10) : Promise<Response<any>> {
-        const result = await this.paymentService.findAll(body, +page, +limit);
-        return {
-            message: 'Fetched payments successfully',
-            data: result,
-        };
-    }
+  @Get()
+  async findAll(
+    @Query() body: PaymentQuery,
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+  ): Promise<Response<any>> {
+    const result = await this.paymentService.findAll(body, +page, +limit);
+    return {
+      message: 'Fetched payments successfully',
+      data: result,
+    };
+  }
 }

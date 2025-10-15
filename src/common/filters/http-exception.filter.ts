@@ -22,7 +22,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       const exceptionResponse = exception.getResponse();
       if (typeof exceptionResponse === 'string') {
         message = exceptionResponse;
-      } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+      } else if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null
+      ) {
         message = (exceptionResponse as any).message || message;
       }
     } else if (exception instanceof Error) {
@@ -31,7 +34,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       message,
-      error: status >= 400 && status < 500 ? 'Bad Request' : 'Internal Server Error',
+      error:
+        status >= 400 && status < 500 ? 'Bad Request' : 'Internal Server Error',
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,

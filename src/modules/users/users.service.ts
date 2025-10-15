@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -8,9 +12,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<UserDocument>,
-  ) { }
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async updatePassword(email: string, newPassword: string): Promise<User> {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -30,7 +32,6 @@ export class UsersService {
 
     return updatedUser;
   }
-
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const existingUser = await this.userModel.findOne({
@@ -52,7 +53,11 @@ export class UsersService {
     return user.save();
   }
 
-  async findAll(search?: string, page = 1, limit = 10): Promise<{
+  async findAll(
+    search?: string,
+    page = 1,
+    limit = 10,
+  ): Promise<{
     data: User[];
     total: number;
     totalPages: number;
@@ -87,7 +92,6 @@ export class UsersService {
       page,
     };
   }
-
 
   async findById(id: string): Promise<User> {
     if (!Types.ObjectId.isValid(id)) {
@@ -148,7 +152,10 @@ export class UsersService {
     }
 
     const user = await this.userModel
-      .findOneAndUpdate({ _id: id, isDeleted: false }, { $set: { isDeleted: true } })
+      .findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { $set: { isDeleted: true } },
+      )
       .exec();
 
     if (!user) throw new NotFoundException('User not found');
@@ -160,7 +167,11 @@ export class UsersService {
     }
 
     const user = await this.userModel
-      .findOneAndUpdate({ _id: id, isDeleted: true }, { $set: { isDeleted: false } }, { new: true })
+      .findOneAndUpdate(
+        { _id: id, isDeleted: true },
+        { $set: { isDeleted: false } },
+        { new: true },
+      )
       .populate('roles')
       .select('-password')
       .exec();
@@ -225,6 +236,4 @@ export class UsersService {
 
     return user;
   }
-
-
 }

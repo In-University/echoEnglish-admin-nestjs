@@ -18,7 +18,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
 
   @Public()
   @Post('login')
@@ -37,19 +37,24 @@ export class AuthController {
     const user = await this.usersService.findByEmail(email);
     if (!user) throw new BadRequestException('User not found');
 
-    const result = await this.authService.generateOtp(email, OtpPurpose.FORGOT_PASSWORD);
+    const result = await this.authService.generateOtp(
+      email,
+      OtpPurpose.FORGOT_PASSWORD,
+    );
     return {
-      message: "",
-      data: result
+      message: '',
+      data: result,
     };
   }
 
   @Public()
   @Post('verify-otp')
-  async verifyOtp(@Body() body: { email: string; otp: string }): Promise<Response<any>> {
+  async verifyOtp(
+    @Body() body: { email: string; otp: string },
+  ): Promise<Response<any>> {
     await this.authService.verifyOtp(body.email, body.otp);
     return {
-      message: 'OTP verified'
+      message: 'OTP verified',
     };
   }
 
@@ -60,7 +65,9 @@ export class AuthController {
   ): Promise<Response<any>> {
     const { email, otp, newPassword } = body;
     if (!newPassword || newPassword.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters long');
+      throw new BadRequestException(
+        'Password must be at least 8 characters long',
+      );
     }
     await this.authService.verifyOtp(email, otp);
     await this.usersService.updatePassword(email, newPassword);
