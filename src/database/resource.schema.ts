@@ -76,9 +76,6 @@ export class Resource {
   @Prop({ type: String })
   moderationNotes?: string;
 
-  @Prop({ default: false })
-  isDeleted: boolean;
-
   createdAt?: Date;
   updatedAt?: Date;
 }

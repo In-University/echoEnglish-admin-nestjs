@@ -37,7 +37,7 @@ export class ResourceController {
       throw new Error('Invalid page or limit');
     }
 
-    let sortOption: Record<string, 1 | -1> = {};
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
     if (sort === 'newest') {
       sortOption = { publishedAt: -1 };
     }

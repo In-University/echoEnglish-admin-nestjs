@@ -35,6 +35,16 @@ export class UsersController {
       data: result,
     };
   }
+
+  // Lấy tất cả users (cho multi-select, không pagination)
+  @Get('all')
+  async getAllUsers(): Promise<Response<any>> {
+    const users = await this.usersService.getAllUsers();
+    return {
+      message: 'Fetched all users successfully',
+      data: users,
+    };
+  }
   @Post()
   async create(@Body() createUserDto: CreateUserDto): Promise<Response<any>> {
     const user = await this.usersService.create(createUserDto);

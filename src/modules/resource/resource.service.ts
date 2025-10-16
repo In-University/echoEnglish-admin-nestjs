@@ -138,19 +138,26 @@ export class ResourceService {
     totalPages: number;
     page: number;
   }> {
-    const query: any = { isDeleted: false };
+    const query: any = {};
 
     // Áp dụng các filter
     if (filters.type) {
       query.type = filters.type;
     }
 
-    if (filters.suitableForLearners !== undefined) {
-      query.suitableForLearners = filters.suitableForLearners === 'true';
+    if (
+      filters.suitableForLearners &&
+      filters.suitableForLearners.trim() !== ''
+    ) {
+      if (filters.suitableForLearners === 'true') {
+        query.suitableForLearners = true;
+      } else {
+        query.suitableForLearners = false;
+      }
     }
 
-    if (filters.cefr) {
-      query['labels.cefr'] = filters.cefr;
+    if (filters.q && filters.q.trim() !== '') {
+      query.title = new RegExp(filters.q, 'i');
     }
 
     if (filters.style) {

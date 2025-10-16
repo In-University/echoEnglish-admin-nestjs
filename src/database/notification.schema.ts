@@ -66,9 +66,6 @@ export class Notification {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   createdBy?: Types.ObjectId;
 
-  @Prop({ default: false })
-  isDeleted: boolean;
-
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -70,7 +70,6 @@ export class NotificationService {
     const userObjectId = new Types.ObjectId(userId);
     const query = {
       $or: [{ userIds: { $size: 0 } }, { userIds: userObjectId }],
-      isDeleted: false,
     };
 
     const data = await this.notificationModel
@@ -147,7 +146,6 @@ export class NotificationService {
     const notifications = await this.notificationModel
       .find({
         $or: [{ userIds: { $size: 0 } }, { userIds: userObjectId }],
-        isDeleted: false,
       })
       .exec();
 
@@ -183,7 +181,6 @@ export class NotificationService {
     const notifications = await this.notificationModel
       .find({
         $or: [{ userIds: { $size: 0 } }, { userIds: userObjectId }],
-        isDeleted: false,
       })
       .exec();
 

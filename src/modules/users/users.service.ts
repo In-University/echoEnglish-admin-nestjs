@@ -93,6 +93,23 @@ export class UsersService {
     };
   }
 
+  // Lấy tất cả users (cho multi-select)
+  async getAllUsers(): Promise<
+    Array<{ _id: string; email: string; fullName: string }>
+  > {
+    const users = await this.userModel
+      .find({ isDeleted: false })
+      .select('_id email fullName')
+      .sort({ email: 1 })
+      .exec();
+
+    return users.map((user) => ({
+      _id: user._id.toString(),
+      email: user.email,
+      fullName: user.fullName,
+    }));
+  }
+
   async findById(id: string): Promise<User> {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException('User not found');
