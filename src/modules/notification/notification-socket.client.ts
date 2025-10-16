@@ -31,8 +31,9 @@ export class NotificationSocketClient implements OnModuleInit {
     this.socket = io(this.socketUrl, {
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 3000, 
     });
 
     this.socket.on('connect', () => {
