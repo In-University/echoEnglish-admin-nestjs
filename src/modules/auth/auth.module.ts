@@ -6,12 +6,16 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
+import { RolesModule } from '../roles/roles.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Otp, OtpSchema } from '../../database/otp.schema';
+import { User, UserSchema } from '../../database/user.schema';
+import { Role, RoleSchema } from '../../database/role.schema';
 
 @Module({
   imports: [
     UsersModule,
+    RolesModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -25,7 +29,11 @@ import { Otp, OtpSchema } from '../../database/otp.schema';
       }),
       inject: [ConfigService],
     }),
-    MongooseModule.forFeature([{ name: Otp.name, schema: OtpSchema }]),
+    MongooseModule.forFeature([
+      { name: Otp.name, schema: OtpSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Role.name, schema: RoleSchema },
+    ]),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

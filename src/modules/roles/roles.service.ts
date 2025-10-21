@@ -17,4 +17,8 @@ export class RolesService {
 
     return this.roleModel.find(query).select('name description').exec();
   }
+
+  async findByName(name: string): Promise<Role | null> {
+    return this.roleModel.findOne({ name: name.toUpperCase() }).exec();
+  }
 }

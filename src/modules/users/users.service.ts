@@ -157,6 +157,28 @@ export class UsersService {
     return user;
   }
 
+  async updateUser(id: string, updateData: Partial<UpdateUserDto>): Promise<User> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new NotFoundException('User not found');
+    }
+
+    const user = await this.userModel
+      .findOneAndUpdate(
+        { _id: id },
+        { $set: updateData },
+        { new: true },
+      )
+      .populate('roles')
+      .select('-password')
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   async remove(id: string, hardDelete = false): Promise<void> {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException('Invalid user ID');

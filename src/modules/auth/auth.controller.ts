@@ -8,6 +8,11 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
+import {
+  RegisterDto,
+  VerifyRegistrationOtpDto,
+  ResendRegistrationOtpDto,
+} from './dto/register.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { UsersService } from '../users/users.service';
 import { OtpPurpose } from '../../common/enums/otp-purpose.enum';
@@ -73,5 +78,41 @@ export class AuthController {
     await this.usersService.updatePassword(email, newPassword);
 
     return { message: 'Password reset successful' };
+  }
+
+  @Public()
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() registerDto: RegisterDto): Promise<Response<any>> {
+    const result = await this.authService.registerAdmin(registerDto);
+    return {
+      message: 'OTP sent to your email. Please verify to complete registration.',
+      data: result,
+    };
+  }
+
+  @Public()
+  @Post('verify-registration-otp')
+  @HttpCode(HttpStatus.OK)
+  async verifyRegistrationOtp(
+    @Body() verifyDto: VerifyRegistrationOtpDto,
+  ): Promise<Response<any>> {
+    await this.authService.verifyRegistrationOtp(verifyDto.email, verifyDto.otp);
+    return {
+      message: 'OTP verified. Please proceed with completing your profile.',
+    };
+  }
+
+  @Public()
+  @Post('resend-registration-otp')
+  @HttpCode(HttpStatus.OK)
+  async resendRegistrationOtp(
+    @Body() resendDto: ResendRegistrationOtpDto,
+  ): Promise<Response<any>> {
+    const result = await this.authService.resendRegistrationOtp(resendDto.email);
+    return {
+      message: 'OTP resent to your email',
+      data: result,
+    };
   }
 }
