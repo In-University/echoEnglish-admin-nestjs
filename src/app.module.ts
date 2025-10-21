@@ -10,6 +10,7 @@ import { PromoModule } from './modules/promotion/promo.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ResourceModule } from './modules/resource/resource.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     PaymentModule,
     ResourceModule,
     NotificationModule,
+    DashboardModule,
   ],
   providers: [
     {
