@@ -22,7 +22,7 @@ export class GoogleGenAIService {
       console.warn('[AI] No Gemini API key found in environment variables');
     }
 
-    const modelName = 'gemini-2.0-flash-exp';
+    const modelName = 'gemini-2.5-flash-lite';
     this.model = new ChatGoogleGenerativeAI({
       model: modelName,
       temperature: 0.2,

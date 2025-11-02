@@ -114,10 +114,15 @@ export class ResourceController {
   // GET /resources/rss/trigger - Trigger RSS fetch
   @Get('rss/trigger')
   async triggerRss(): Promise<Response<any>> {
-    const newResources = await this.resourceService.triggerRss();
-    return {
-      message: 'RSS triggered successfully',
-      data: newResources,
-    };
+    try {
+      const newResources = await this.resourceService.triggerRss();
+      return {
+        message: 'RSS triggered successfully',
+        data: newResources,
+      };
+    } catch (error) {
+      console.error('[RSS Controller] Error:', error);
+      throw error;
+    }
   }
 }

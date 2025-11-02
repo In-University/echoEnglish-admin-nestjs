@@ -15,22 +15,18 @@ export class PromptManagerService {
       return this.promptCache.get(templateName)!;
     }
 
-    // Try to find template in speaking folder
-    let promptPath = path.join(
-      this.promptsPath,
-      'speaking',
-      `${templateName}.txt`,
-    );
+    // Try to find template in root templates folder first
+    let promptPath = path.join(this.promptsPath, `${templateName}.txt`);
 
     try {
       const template = await fs.readFile(promptPath, 'utf-8');
       this.promptCache.set(templateName, template);
       return template;
     } catch {
-      // Try writing templates
+      // Try to find template in speaking folder
       promptPath = path.join(
         this.promptsPath,
-        'writing',
+        'speaking',
         `${templateName}.txt`,
       );
 
@@ -38,9 +34,25 @@ export class PromptManagerService {
         const template = await fs.readFile(promptPath, 'utf-8');
         this.promptCache.set(templateName, template);
         return template;
-      } catch (error) {
-        console.error(`Error reading prompt template: ${templateName}`, error);
-        throw new Error(`Prompt template ${templateName} not found.`);
+      } catch {
+        // Try writing templates
+        promptPath = path.join(
+          this.promptsPath,
+          'writing',
+          `${templateName}.txt`,
+        );
+
+        try {
+          const template = await fs.readFile(promptPath, 'utf-8');
+          this.promptCache.set(templateName, template);
+          return template;
+        } catch (error) {
+          console.error(
+            `Error reading prompt template: ${templateName}`,
+            error,
+          );
+          throw new Error(`Prompt template ${templateName} not found.`);
+        }
       }
     }
   }

@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Resource, ResourceDocument } from '../../database/resource.schema';
 import { UpdateResourceDto } from './dto/update-resource.dto';
 import { ResourceType } from '../../common/enums/resource-type.enum';
+import { Domain, AVAILABLE_DOMAINS } from '../../common/enums/domain.enum';
 import { GoogleGenAIService } from '../../common/services/google-genai.service';
 import { PromptManagerService } from '../../common/services/prompt-manager.service';
 import { PromptTemplate } from '@langchain/core/prompts';
@@ -28,7 +29,7 @@ export class ResourceService {
   private readonly rssFeeds: readonly string[] = [
     'https://e.vnexpress.net/rss/travel.rss',
     'https://e.vnexpress.net/rss/world.rss',
-    'https://tuoitrenews.vn/rss',
+    // 'https://tuoitrenews.vn/rss',
   ];
 
   constructor(
@@ -260,61 +261,91 @@ export class ResourceService {
     const results: Resource[] = [];
     const limit = pLimit(5);
 
-    for (const feedUrl of this.rssFeeds) {
-      const parser = new Parser();
-      const feed = await parser.parseURL(feedUrl);
+    try {
+      for (const feedUrl of this.rssFeeds) {
+        console.log(`[RSS] Fetching feed: ${feedUrl}`);
+        const parser = new Parser();
+        const feed = await parser.parseURL(feedUrl);
 
-      let validCount = 0;
-      const itemPromises: Promise<Resource | null>[] = [];
+        let validCount = 0;
+        const itemPromises: Promise<Resource | null>[] = [];
 
-      for (const item of feed.items) {
-        if (validCount >= 3) break;
+        for (const item of feed.items) {
+          if (validCount >= 1) break; // 1 Bài báo mỗi RSS feed
 
-        const exist = await this.resourceModel.findOne({ url: item.link });
-        if (exist) {
-          console.log(`[RSS] Skip duplicated: ${item.link}`);
-          continue;
+          const exist = await this.resourceModel.findOne({ url: item.link });
+          if (exist) {
+            console.log(`[RSS] Skip duplicated: ${item.link}`);
+            continue;
+          }
+
+          validCount++;
+          itemPromises.push(
+            limit(async () => {
+              try {
+                const htmlContent = item.link
+                  ? await this.fetchArticleText(item.link)
+                  : '';
+
+                const analyzed = await this.analyzeContentWithLLM(
+                  item.title + '\n' + htmlContent,
+                );
+
+                // Validate domain - fallback to GENERAL if not in enum
+                if (
+                  analyzed.labels?.domain &&
+                  !AVAILABLE_DOMAINS.includes(analyzed.labels.domain as Domain)
+                ) {
+                  console.warn(
+                    `[RSS] Invalid domain "${analyzed.labels.domain}" for ${item.link}, fallback to GENERAL`,
+                  );
+                  analyzed.labels.domain = Domain.GENERAL;
+                } else if (!analyzed.labels?.domain) {
+                  analyzed.labels = {
+                    ...analyzed.labels,
+                    domain: Domain.GENERAL,
+                  };
+                }
+
+                const payload: Partial<Resource> = {
+                  type: ResourceType.WEB_RSS,
+                  url: item.link || '',
+                  title: item.title || 'Untitled',
+                  publishedAt: item.pubDate
+                    ? new Date(item.pubDate)
+                    : new Date(),
+                  lang: 'en',
+                  summary: analyzed.summary,
+                  content: this.cleanHtmlContent(htmlContent),
+                  keyPoints: analyzed.keyPoints,
+                  labels: analyzed.labels,
+                  suitableForLearners: analyzed.suitableForLearners,
+                  moderationNotes: analyzed.moderationNotes,
+                };
+
+                const resource = await this.resourceModel.create(payload);
+                console.log(`[RSS] Saved: ${item.link}`);
+                return resource;
+              } catch (err) {
+                console.error(
+                  `[ResourceService] Failed to process ${item.link}:`,
+                  err.message,
+                );
+                return null;
+              }
+            }),
+          );
         }
 
-        validCount++;
-        itemPromises.push(
-          limit(async () => {
-            const htmlContent = item.link
-              ? await this.fetchArticleText(item.link)
-              : '';
-
-            const analyzed = await this.analyzeContentWithLLM(
-              item.title + '\n' + htmlContent,
-            );
-
-            const payload: Partial<Resource> = {
-              type: ResourceType.WEB_RSS,
-              url: item.link || '',
-              title: item.title || 'Untitled',
-              publishedAt: item.pubDate ? new Date(item.pubDate) : new Date(),
-              lang: 'en',
-              summary: analyzed.summary,
-              content: this.cleanHtmlContent(htmlContent),
-              keyPoints: analyzed.keyPoints,
-              labels: analyzed.labels,
-              suitableForLearners: analyzed.suitableForLearners,
-              moderationNotes: analyzed.moderationNotes,
-            };
-
-            try {
-              return await this.resourceModel.create(payload);
-            } catch (err) {
-              console.error('[ResourceService] Skipped invalid resource', err);
-              return null;
-            }
-          }),
-        );
+        const feedResults = await Promise.all(itemPromises);
+        results.push(...feedResults.filter((r): r is Resource => r !== null));
       }
 
-      const feedResults = await Promise.all(itemPromises);
-      results.push(...feedResults.filter((r): r is Resource => r !== null));
+      console.log(`[RSS] Total saved: ${results.length}`);
+      return results;
+    } catch (error) {
+      console.error('[RSS] triggerRss failed:', error);
+      throw error;
     }
-
-    return results;
   }
 }
